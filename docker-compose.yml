@@ -1,0 +1,21 @@
+services:
+  api: &main_app
+    build:
+      context: .
+      target: dev
+      dockerfile: ./Dockerfile
+    image: pto_backend:${PTO_BACKEND_VERSION:-latest}
+    restart: always
+    ports:
+      # Exposes application port.
+    - "8000:8000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      PTO_BACKEND_HOST: 0.0.0.0
+      PTO_BACKEND_RELOAD: "True"
+    volumes:
+      - .:/app/src/
+
+
