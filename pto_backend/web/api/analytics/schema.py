@@ -1,4 +1,3 @@
-from typing import Dict, List
 
 from pydantic import BaseModel
 
@@ -26,8 +25,9 @@ class CalculateVacations(BaseModel):
     state: str
     client_name: str
     used_vacations: str
-    text_inputs: List[Dict[str,str]]
+    text_inputs: list[dict[str, str]]
     pto_logging_id: str
+
 
 class FeedBackFormSubmit(BaseModel):
     pto_logging_id: str

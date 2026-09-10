@@ -1,4 +1,4 @@
-from typing import Dict, List, Any
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -64,10 +64,10 @@ class PTOSummariser(BaseModel):
     vacation_hours_available: float = Field(
         description="Extract total vacation hours available"
     )
-    leaves_policy_breakdown: List[str] = Field(
+    leaves_policy_breakdown: list[str] = Field(
         description="A short breakdown about the pto_extractor from the Vacation Policy include all the sections from Extracted Information output, like Initial Eligibility,Earning & accruing vacations,Carryovers and Termination & payouts"
     )
-    leaves_accrued_calculation: List[str] = Field(
+    leaves_accrued_calculation: list[str] = Field(
         description="A short description about the pto_calculator regarding the formula and how the leave calculated, make it step by step provess, as step1, step2 etc... And conver all the sections from Initial Eligibility,Earning & Accruing Vacations,Carryover these are the steps need to include."
     )
     leaves_available_calculation: str = Field(
@@ -79,4 +79,4 @@ class PTOSummariser(BaseModel):
 
 
 class PTOSummariserParser(PTOSummariser):
-    leaves_available_calculation_raw_json: Dict[str, Any]
+    leaves_available_calculation_raw_json: dict[str, Any]

@@ -1,6 +1,7 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
-from datetime import datetime
 
 class TokenSchema(BaseModel):
     email: str

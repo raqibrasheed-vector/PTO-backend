@@ -1,13 +1,14 @@
-from typing import Any, Dict, Tuple
-from uuid import uuid4
-from fastapi import HTTPException, Request
 from pathlib import Path
+from typing import Any
+from uuid import uuid4
+
+from fastapi import HTTPException, Request
+from onelogin.saml2.auth import OneLogin_Saml2_Auth
 
 from pto_backend.manager.auth_validator.manager import TokenGatewayManager
+from pto_backend.manager.saml import schema
 from pto_backend.middlewares.errors.handler import handle_exceptions
 from pto_backend.settings import settings
-from onelogin.saml2.auth import OneLogin_Saml2_Auth
-from pto_backend.manager.saml import schema
 
 # List of claim attributes
 EMAIL_CLAIM = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
@@ -64,14 +65,14 @@ class SAMLManager:
 
         return auth_login.login(return_to=settings.frontend_url)
 
-    async def flattern_arrtibutes(self, saml_data: Dict[str, Any]) -> Dict[str, str]:
+    async def flattern_arrtibutes(self, saml_data: dict[str, Any]) -> dict[str, str]:
         flat_attributes = {
             key: values[0] if values else None for key, values in saml_data.items()
         }
         return flat_attributes
 
     @handle_exceptions(re_raise=True, return_type=tuple)
-    async def process_saml_request(self) -> Tuple[str, str]:
+    async def process_saml_request(self) -> tuple[str, str]:
         form = await self.request_data.form()
 
         saml_response = form.get("SAMLResponse")
@@ -95,7 +96,6 @@ class SAMLManager:
         try:
             auth.process_response()
         except Exception as exc:
-
             raise HTTPException(
                 status_code=401, detail=f"SAML processing failed: {exc}"
             )
@@ -103,7 +103,6 @@ class SAMLManager:
         errors = auth.get_errors()
 
         if errors:
-
             raise HTTPException(
                 status_code=401,
                 detail={

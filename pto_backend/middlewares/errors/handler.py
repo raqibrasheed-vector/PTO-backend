@@ -3,20 +3,13 @@ from __future__ import annotations
 import json
 from collections.abc import Awaitable, Callable
 from functools import wraps
-from typing import (
-    Any,
-    ParamSpec,
-    TypeVar,
-    Optional
-)
+from typing import Any, ParamSpec, TypeVar
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
 
 from pto_backend.middlewares.customlogger.customlogger import SingletonLogger
 from pto_backend.middlewares.errors.error_maps import error_mappings
-
-
 
 logger = SingletonLogger().get_logger()
 
@@ -32,7 +25,7 @@ def safe_json_dumps(obj: Any) -> str | None:
 
 
 def handle_exceptions(
-    exception_map:Optional[dict[type[Exception], tuple[int, str]]] = error_mappings,
+    exception_map: dict[type[Exception], tuple[int, str]] | None = error_mappings,
     log_func: Callable[[str], None] | None = None,
     re_raise: bool = False,
     default_status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR,

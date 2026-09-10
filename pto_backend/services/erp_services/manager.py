@@ -1,11 +1,11 @@
+
+from async_lru import alru_cache
+from fastapi import HTTPException
+
 from pto_backend.manager.request_manager.manager import AsyncAPIClient
 from pto_backend.middlewares.errors.handler import handle_exceptions
 from pto_backend.services.erp_services import schema
 from pto_backend.settings import settings
-
-from fastapi import HTTPException
-from async_lru import alru_cache
-from typing import Dict, List
 
 
 class ErpServicesManager:
@@ -40,10 +40,10 @@ class ErpServicesManager:
 
         return token_data.get("access_token")
 
-    @handle_exceptions(re_raise=True, return_type=List[schema.EmployeeResponse])
+    @handle_exceptions(re_raise=True, return_type=list[schema.EmployeeResponse])
     async def fetch_employee_details(
         self, employee_id: str, start_date: str, end_date: str
-    ) -> List[schema.EmployeeResponse]:
+    ) -> list[schema.EmployeeResponse]:
 
         params = {
             "EmployeeId": employee_id,
@@ -57,7 +57,7 @@ class ErpServicesManager:
         }
 
         try:
-            employee_Data: List[Dict[str, str]] = await self.requestSession.get(
+            employee_Data: list[dict[str, str]] = await self.requestSession.get(
                 endpoint="/allegis-prod-psemployeetimedataapi/v1/timecode/summary",
                 params=params,
                 headers=headers,
@@ -69,7 +69,7 @@ class ErpServicesManager:
                     detail="Employee details not found. Please verify the Employee ID and try again.",
                 )
 
-            employee_list: List[schema.EmployeeResponse] = [
+            employee_list: list[schema.EmployeeResponse] = [
                 schema.EmployeeResponse(
                     employee_id=selected_employee.get("EmployeeId"),
                     employee_name=selected_employee.get("EmployeeName"),

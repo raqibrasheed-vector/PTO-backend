@@ -1,8 +1,9 @@
-from typing import Dict, List
-from agent_framework.orchestrations import SequentialBuilder
+
 from agent_framework.openai import OpenAIChatClient, OpenAIChatOptions
+from agent_framework.orchestrations import SequentialBuilder
 from azure.identity.aio import DefaultAzureCredential
 
+from pto_backend.middlewares.errors.handler import handle_exceptions
 from pto_backend.services.azure.foundry.prompts import pto_prompts
 from pto_backend.services.azure.foundry.response_types.llm_responses import (
     PTOEligibilityExtractor,
@@ -12,7 +13,6 @@ from pto_backend.services.azure.foundry.response_types.llm_responses import (
 )
 from pto_backend.services.helpers.azure_chat import ChatHelpers
 from pto_backend.settings import settings
-from pto_backend.middlewares.errors.handler import handle_exceptions
 
 
 class AzureVacationChatClient(ChatHelpers):
@@ -56,7 +56,7 @@ class AzureVacationChatClient(ChatHelpers):
         regular_hours_worked: str,
         state: str,
         used_vacations: str,
-        text_inputs: List[Dict[str, str]],
+        text_inputs: list[dict[str, str]],
     ) -> PTOSummariserParser:
 
         # Normalize the state
@@ -125,7 +125,7 @@ class AzureVacationChatClient(ChatHelpers):
             message="",
         )
 
-        print(">>>>",events.get_outputs()[0].__dict__)
+        print(">>>>", events.get_outputs()[0].__dict__)
 
         result = events.get_outputs()[0]
 

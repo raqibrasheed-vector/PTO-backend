@@ -43,19 +43,19 @@ class Settings(BaseSettings):
 
     log_level: LogLevel = LogLevel.DEBUG
 
-    erp_tenant_id: str = os.getenv('TENANT_ID', '')
-    erp_client_id: str = os.getenv('CLIENT_ID', '')
-    erp_client_secret: str = os.getenv('CLIENT_SECRET','')
-    erp_resource: str = os.getenv('RESOURCE','')
-    erp_token_url: str = os.getenv('TOKEN_URL','')
-    erp_api_url: str = os.getenv('API_URL','')
+    erp_tenant_id: str = os.getenv("TENANT_ID", "")
+    erp_client_id: str = os.getenv("CLIENT_ID", "")
+    erp_client_secret: str = os.getenv("CLIENT_SECRET", "")
+    erp_resource: str = os.getenv("RESOURCE", "")
+    erp_token_url: str = os.getenv("TOKEN_URL", "")
+    erp_api_url: str = os.getenv("API_URL", "")
 
-    frontend_url: str = os.getenv("FRONTEND_URL","")
+    frontend_url: str = os.getenv("FRONTEND_URL", "")
     saml_settings_base64: str = os.getenv("SAML_SETTINGS_BASE64", "")
 
-    access_secret: str = os.getenv("TOKEN_SECRET","")
+    access_secret: str = os.getenv("TOKEN_SECRET", "")
     token_audience: str = os.getenv("TOKEN_AUDIENCE", "actalent")
-    cookie_domain: str = os.getenv("COOKIE_DOMAIN","")
+    cookie_domain: str = os.getenv("COOKIE_DOMAIN", "")
 
     cosmos_db_url: str = os.getenv("COSMOS_DB_URL", "")
     cosmos_db_name: str = os.getenv("COSMOS_DB_NAME", "")
@@ -68,18 +68,14 @@ class Settings(BaseSettings):
     cosmos_pool_keepalive_timeout: float = float(
         os.getenv("COSMOS_POOL_KEEPALIVE_TIMEOUT", "30")
     )
-    cosmos_connection_timeout: int = int(
-        os.getenv("COSMOS_CONNECTION_TIMEOUT", "5")
-    )
+    cosmos_connection_timeout: int = int(os.getenv("COSMOS_CONNECTION_TIMEOUT", "5"))
     cosmos_request_timeout: int = int(os.getenv("COSMOS_REQUEST_TIMEOUT", "5"))
 
     # Document vectorization (semantic search over uploaded PTO documents).
     vectorstore_dir: str = os.getenv("VECTORSTORE_DIR", "vectorstores")
     vectorstore_ocr_dpi: int = int(os.getenv("VECTORSTORE_OCR_DPI", "300"))
     vectorstore_chunk_size: int = int(os.getenv("VECTORSTORE_CHUNK_SIZE", "2000"))
-    vectorstore_chunk_overlap: int = int(
-        os.getenv("VECTORSTORE_CHUNK_OVERLAP", "400")
-    )
+    vectorstore_chunk_overlap: int = int(os.getenv("VECTORSTORE_CHUNK_OVERLAP", "400"))
     vectorstore_default_query: str = os.getenv(
         "VECTORSTORE_DEFAULT_QUERY", "Vacation Policy"
     )
@@ -87,7 +83,7 @@ class Settings(BaseSettings):
 
     # openAI configs
     azure_endpoint: str = os.getenv("AZURE_ENDPOINT", "")
-    open_ai_model: str = os.getenv("AZURE_MODEL","")
+    open_ai_model: str = os.getenv("AZURE_MODEL", "")
     open_ai_version: str = os.getenv("OPENAI_API_VERSION", "")
     open_ai_key: str = os.getenv("OPENAI_API_KEY", "")
 
@@ -95,7 +91,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_prefix="PTO_BACKEND_",
         env_file_encoding="utf-8",
-        extra="allow"
+        extra="allow",
     )
 
 

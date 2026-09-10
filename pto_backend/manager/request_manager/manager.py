@@ -1,16 +1,14 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 import httpx
 from fastapi import HTTPException
-
-from pto_backend.settings import settings
 
 
 class AsyncAPIClient:
     def __init__(
         self,
         url: str,
-        headers: Optional[Dict[str, str]] = None,
+        headers: dict[str, str] | None = None,
         timeout: int = 10,
     ):
         self.base_url = url
@@ -21,9 +19,9 @@ class AsyncAPIClient:
     async def get(
         self,
         endpoint: str,
-        params: Optional[Dict[str, Any]] = None,
-        headers: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, Any]:
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> dict[str, Any]:
         return await self._request("GET", endpoint, params=params, headers=headers)
 
     async def post(
@@ -31,8 +29,8 @@ class AsyncAPIClient:
         endpoint: str,
         data: Any = None,
         json: Any = None,
-        headers: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, Any]:
+        headers: dict[str, str] | None = None,
+    ) -> dict[str, Any]:
         return await self._request(
             "POST",
             endpoint,
@@ -46,8 +44,8 @@ class AsyncAPIClient:
         endpoint: str,
         data: Any = None,
         json: Any = None,
-        headers: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, Any]:
+        headers: dict[str, str] | None = None,
+    ) -> dict[str, Any]:
         return await self._request(
             "PUT",
             endpoint,
@@ -59,19 +57,19 @@ class AsyncAPIClient:
     async def delete(
         self,
         endpoint: str,
-        headers: Optional[Dict[str, str]] = None,
-    ) -> Optional[Dict[str, Any]]:
+        headers: dict[str, str] | None = None,
+    ) -> dict[str, Any] | None:
         return await self._request("DELETE", endpoint, headers=headers)
 
     async def _request(
         self,
         method: str,
         endpoint: str,
-        params: Optional[Dict[str, Any]] = None,
-        data: Dict[str, Any] = {},
-        json: Dict[str, Any] = {},
-        headers: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, Any]:
+        params: dict[str, Any] | None = None,
+        data: dict[str, Any] = {},
+        json: dict[str, Any] = {},
+        headers: dict[str, str] | None = None,
+    ) -> dict[str, Any]:
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         merged_headers = {**self.default_headers, **(headers or {})}
         merged_params = {**(params or {})}

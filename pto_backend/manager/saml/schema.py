@@ -1,5 +1,5 @@
+
 from pydantic import BaseModel
-from typing import Dict
 
 
 class SAMLResponse(BaseModel):
@@ -7,6 +7,6 @@ class SAMLResponse(BaseModel):
     http_host: str
     server_port: str
     script_name: str
-    get_data: Dict[str, str]
-    post_data: Dict[str,str]
+    get_data: dict[str, str]
+    post_data: dict[str, str]
     query_string: str

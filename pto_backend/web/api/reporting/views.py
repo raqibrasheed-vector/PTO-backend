@@ -15,9 +15,20 @@ from pto_backend.web.api.reporting import schema
 router = APIRouter()
 
 EXPORT_COLUMNS = [
-    "employee_id", "start_date", "end_date", "employee_name", "client_name",
-    "total_hours", "total_leaves_used", "state", "leaves_available",
-    "created_at", "user_name", "file_name", "feedback", "feedback_type",
+    "employee_id",
+    "start_date",
+    "end_date",
+    "employee_name",
+    "client_name",
+    "total_hours",
+    "total_leaves_used",
+    "state",
+    "leaves_available",
+    "created_at",
+    "user_name",
+    "file_name",
+    "feedback",
+    "feedback_type",
 ]
 
 
@@ -69,14 +80,11 @@ async def get_audit_data(
     _: TokenSchema = Depends(TokenGatewayManager.validate_token_entry_point_admin),
 ) -> PaginationResponse[list[AuditDataResponse]]:
 
-
     audit_response_data, pagination = await cosmos_client.get_audit_data(
         **filter_data.model_dump()
     )
 
-    return PaginationResponse(
-        data=audit_response_data, **pagination.model_dump()
-    )
+    return PaginationResponse(data=audit_response_data, **pagination.model_dump())
 
 
 @router.post("/audit-export")

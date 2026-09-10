@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from typing import Any, List, Optional, Tuple
+from typing import Any
 
 from pto_backend.services.azure.cosmosdb.schema import FiltersType
 from pto_backend.types.api_types import ModelsPagination
@@ -9,7 +9,7 @@ class DatabaseQueryUtils:
     """Database query utils"""
 
     @staticmethod
-    def _exclusive_end_date(end_date: Optional[str]) -> Optional[str]:
+    def _exclusive_end_date(end_date: str | None) -> str | None:
         """Make a date-only end filter inclusive of the selected day."""
         if not end_date or len(end_date) != 10:
             return end_date
@@ -19,7 +19,7 @@ class DatabaseQueryUtils:
         except ValueError:
             return end_date
 
-    async def generate_distinct_query(self, fields: List[str]) -> str:
+    async def generate_distinct_query(self, fields: list[str]) -> str:
         if not fields:
             raise ValueError("At least one field is required")
 
@@ -31,11 +31,11 @@ class DatabaseQueryUtils:
         self,
         limit: int,
         offset: int,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
-        filters: Optional[List[FiltersType]] = None,
-        feedback_logging_ids: Optional[List[str]] = None,
-    ) -> Tuple[str, List[Any]]:
+        start_date: str | None = None,
+        end_date: str | None = None,
+        filters: list[FiltersType] | None = None,
+        feedback_logging_ids: list[str] | None = None,
+    ) -> tuple[str, list[Any]]:
 
         pto_query = """
             SELECT
@@ -108,7 +108,6 @@ class DatabaseQueryUtils:
 
         if filters:
             for index, filter_item in enumerate(filters):
-
                 field = allowed_sort_fields.get(filter_item.key)
 
                 # Ignore unsupported fields
@@ -179,11 +178,11 @@ class DatabaseQueryUtils:
 
     async def get_pto_logging_count(
         self,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
-        filters: Optional[List[FiltersType]] = None,
-        feedback_logging_ids: Optional[List[str]] = None,
-    ) -> Tuple[str, List[Any]]:
+        start_date: str | None = None,
+        end_date: str | None = None,
+        filters: list[FiltersType] | None = None,
+        feedback_logging_ids: list[str] | None = None,
+    ) -> tuple[str, list[Any]]:
         """Build a count query using exactly the same filters as the data query."""
         query, parameters = await self.get_pto_logging_data(
             start_date=start_date,

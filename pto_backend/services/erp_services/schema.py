@@ -1,6 +1,5 @@
-from typing import List
 
-from pydantic import BaseModel, field_serializer, field_validator
+from pydantic import BaseModel
 
 
 class EmployeeResponse(BaseModel):
@@ -18,9 +17,7 @@ class EmployeeResponse(BaseModel):
 
 class EmployeeResponseParsed(BaseModel):
     id: str
-    employee_list: List[EmployeeResponse]
-
-   
+    employee_list: list[EmployeeResponse]
 
     # @field_serializer("employee_name")
     # def serialize_employee_name(self, value: str) -> str:

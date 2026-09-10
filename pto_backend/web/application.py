@@ -1,11 +1,10 @@
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-
-from fastapi.middleware.cors import CORSMiddleware
 
 from pto_backend.log import configure_logging
 from pto_backend.web.api.router import api_router
@@ -31,14 +30,24 @@ def get_app() -> FastAPI:
     )
 
     # Function to handle HTTP Exception
-    @app.exception_handler(HTTPException) 
-    async def http_exception_handler( request: Request, exc: HTTPException ) -> JSONResponse: 
-        return JSONResponse( status_code=exc.status_code, content={"detail": exc.detail}, ) 
+    @app.exception_handler(HTTPException)
+    async def http_exception_handler(
+        request: Request, exc: HTTPException
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": exc.detail},
+        )
 
     # Function to handle generic exception
-    @app.exception_handler(Exception) 
-    async def unhandled_exception_handler( request: Request, exc: Exception ) -> JSONResponse: 
-        return JSONResponse( status_code=500, content={"detail": "Something went wrong. Please try again."}, )
+    @app.exception_handler(Exception)
+    async def unhandled_exception_handler(
+        request: Request, exc: Exception
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Something went wrong. Please try again."},
+        )
 
     app.add_middleware(
         CORSMiddleware,

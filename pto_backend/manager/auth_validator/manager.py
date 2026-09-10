@@ -1,22 +1,15 @@
-from collections.abc import Awaitable, Callable
-from typing import Annotated, TypeVar
 import datetime
-import re
-import secrets
-import string
-from typing import Literal, TypeVar
+from typing import Annotated, TypeVar
 from uuid import UUID
 
-import bcrypt
 import jwt
-from fastapi import HTTPException, status
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt import exceptions as jwt_exc
 
-from pto_backend.web.enums.app_enums import AppCookieEnums
 from pto_backend.manager.auth_validator.schema import TokenSchema
 from pto_backend.settings import settings
+from pto_backend.web.enums.app_enums import AppCookieEnums
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/saml/token", auto_error=False)
 
@@ -26,13 +19,11 @@ T = TypeVar("T")
 class TokenExpiredException(Exception):
     """Custom exception for expired tokens."""
 
-    pass
 
 
 class UnauthorizedException(Exception):
     """Custom exception for expired tokens."""
 
-    pass
 
 
 class TokenGatewayManager:

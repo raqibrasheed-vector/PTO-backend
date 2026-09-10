@@ -1,15 +1,19 @@
-from fastapi import APIRouter, Form, Depends, HTTPException, status
-from fastapi import UploadFile
-from typing import Annotated, List
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Form, HTTPException, UploadFile, status
+
 from pto_backend.manager.auth_validator.manager import TokenGatewayManager
 from pto_backend.manager.auth_validator.schema import TokenSchema
 from pto_backend.middlewares.errors.handler import handle_exceptions
+from pto_backend.services.azure.cosmosdb.manager import AzureCosmos, tables
 from pto_backend.services.azure.foundry.ai_client import AzureVacationChatClient
 from pto_backend.services.azure.foundry.response_types.llm_responses import (
     PTOSummariserParser,
 )
 from pto_backend.services.erp_services.manager import (
     ErpServicesManager,
+)
+from pto_backend.services.erp_services.manager import (
     schema as erp_schema,
 )
 from pto_backend.services.vectorization.manager import (
@@ -17,7 +21,6 @@ from pto_backend.services.vectorization.manager import (
     VectorizationManager,
 )
 from pto_backend.web.api.analytics import schema
-from pto_backend.services.azure.cosmosdb.manager import AzureCosmos, tables
 
 # Initialize the FastApi Analytics routes
 router = APIRouter()
@@ -64,7 +67,7 @@ async def process_uploaded_document(
             pto_logging_id=pto_logging_id,
             username=current_user_data.name,
             file_name=vectorization_result.file_name,
-            client_name=client_name
+            client_name=client_name,
         )
 
     return schema.ProcessDocumentResponse(
@@ -76,9 +79,7 @@ async def process_uploaded_document(
     )
 
 
-@router.post(
-    "/employee-details", response_model=erp_schema.EmployeeResponseParsed
-)
+@router.post("/employee-details", response_model=erp_schema.EmployeeResponseParsed)
 @handle_exceptions(re_raise=False, return_type=erp_schema.EmployeeResponseParsed)
 async def get_employee_details(
     employee_data: schema.GetEmployeeDetails,
@@ -129,14 +130,19 @@ async def calculate_available_vacation(
 ) -> PTOSummariserParser:
 
     pto_calculation = await azure_openai_client.calculate_vacation(
-        **employee_meta.model_dump(exclude=("pto_logging_id","client_name",))
+        **employee_meta.model_dump(
+            exclude=(
+                "pto_logging_id",
+                "client_name",
+            )
+        )
     )
 
     await cosmos_client.update_pto_logging(
         pto_logging_id=employee_meta.pto_logging_id,
         username=current_user_data.name,
         leaves_available=pto_calculation.vacation_hours_available,
-        client_name=employee_meta.client_name
+        client_name=employee_meta.client_name,
     )
 
     return pto_calculation

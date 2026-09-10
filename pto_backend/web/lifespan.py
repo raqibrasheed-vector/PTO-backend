@@ -17,9 +17,9 @@ def create_saml_settings_file() -> None:
         raise RuntimeError("SAML_SETTINGS_BASE64 must be configured")
 
     try:
-        decoded = base64.b64decode(
-            settings.saml_settings_base64, validate=True
-        ).decode("utf-8")
+        decoded = base64.b64decode(settings.saml_settings_base64, validate=True).decode(
+            "utf-8"
+        )
         configuration = json.loads(decoded)
     except (ValueError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise RuntimeError("SAML_SETTINGS_BASE64 is not valid base64 JSON") from exc

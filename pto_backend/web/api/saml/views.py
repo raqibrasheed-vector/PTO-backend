@@ -1,18 +1,18 @@
 import datetime
 from typing import Annotated
 
-from fastapi.responses import JSONResponse
-from fastapi import APIRouter, Depends, status, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Depends, status
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
+
 from pto_backend.manager.auth_validator.manager import TokenGatewayManager
 from pto_backend.manager.auth_validator.schema import TokenSchema
 from pto_backend.middlewares.errors.handler import handle_exceptions
 from pto_backend.services.azure.cosmosdb.manager import AzureCosmos
-from pto_backend.web.api.saml import utils, schema
-from fastapi.responses import RedirectResponse
+from pto_backend.settings import settings
+from pto_backend.web.api.saml import schema, utils
 from pto_backend.web.enums.app_enums import AppCookieEnums
 from pto_backend.web.types import common_types
-from pto_backend.settings import settings
 
 router = APIRouter()
 
@@ -22,7 +22,7 @@ router = APIRouter()
 async def handle_callback_saml(
     background_tasks: BackgroundTasks,
     saml_manager: utils.SAMLManager = Depends(utils.saml_function_wrapper),
-    cosmos_client: AzureCosmos = Depends()
+    cosmos_client: AzureCosmos = Depends(),
 ) -> None:
     """
     Get SAML response for the application.
@@ -30,7 +30,7 @@ async def handle_callback_saml(
     saml_response, username = await saml_manager.process_saml_request()
 
     # Adding backhtound task to set
-    background_tasks.add_task(cosmos_client.write_user_logging,username)
+    background_tasks.add_task(cosmos_client.write_user_logging, username)
 
     response = RedirectResponse(url=settings.frontend_url, status_code=303)
 
@@ -90,6 +90,7 @@ async def get_current_user(
         session_id=current_user_data.session_id,
         group=current_user_data.group,
     )
+
 
 @router.post("/token")
 async def login_for_access_token(

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from pydantic import BaseModel
 
@@ -7,8 +7,8 @@ from pydantic import BaseModel
 class AbstractTableData(BaseModel):
     """Abstract data model for all the tables"""
 
-    created_at: Optional[datetime] = datetime.now()
-    last_modified: Optional[datetime] = datetime.now()
+    created_at: datetime | None = datetime.now()
+    last_modified: datetime | None = datetime.now()
 
 
 class UserLogging(AbstractTableData):
@@ -18,10 +18,10 @@ class UserLogging(AbstractTableData):
     __table_name__ = "pto_user_login_log"
 
     def __repr__(self):
-        return f"pto_user_login_log"
+        return "pto_user_login_log"
 
     def __str__(self):
-        return f"pto_user_login_log"
+        return "pto_user_login_log"
 
 
 class PTOLogging(AbstractTableData):
@@ -44,10 +44,10 @@ class PTOLogging(AbstractTableData):
     CONTAINER_NAME: ClassVar[str] = "pto_logging"
 
     def __repr__(self):
-        return f"pto_logging"
+        return "pto_logging"
 
     def __str__(self):
-        return f"pto_logging"
+        return "pto_logging"
 
 
 class PTOFeedBackForm(AbstractTableData):
@@ -73,10 +73,10 @@ class PTOFeedBackForm(AbstractTableData):
     CONTAINER_NAME: ClassVar[str] = "PTO_feedback"
 
     def __repr__(self):
-        return f"PTO_feedback"
+        return "PTO_feedback"
 
     def __str__(self):
-        return f"PTO_feedback"
+        return "PTO_feedback"
 
 
-tables_list = [PTOLogging,UserLogging,PTOFeedBackForm]
+tables_list = [PTOLogging, UserLogging, PTOFeedBackForm]

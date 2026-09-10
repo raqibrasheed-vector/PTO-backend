@@ -2,7 +2,6 @@ import asyncio
 import datetime
 import logging
 from collections import defaultdict
-from typing import List, Optional, Tuple
 
 import aiohttp
 from azure.core.pipeline.transport import AioHttpTransport
@@ -23,11 +22,14 @@ from pto_backend.settings import settings
 from pto_backend.types.api_types import ModelsPagination
 
 # Prevent Azure core and cosmos logs from printing to the console
-logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(logging.WARNING)
+logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(
+    logging.WARNING
+)
 logging.getLogger("azure.cosmos").setLevel(logging.WARNING)
 
 # Optional: Silence underlying HTTP connection pool logs if they still appear
 logging.getLogger("urllib3").setLevel(logging.WARNING)
+
 
 class AzureCosmos(DatabaseQueryUtils):
     """Singleton manager for Azure Cosmos DB.
@@ -144,9 +146,7 @@ class AzureCosmos(DatabaseQueryUtils):
 
                     # session_owner=False keeps session ownership here so it
                     # can be closed deterministically during shutdown.
-                    transport = AioHttpTransport(
-                        session=session, session_owner=False
-                    )
+                    transport = AioHttpTransport(session=session, session_owner=False)
                     client = CosmosClient(
                         url=settings.cosmos_db_url,
                         credential=credential,
@@ -405,9 +405,7 @@ class AzureCosmos(DatabaseQueryUtils):
                     }
                 ],
             )
-            feedback_logging_ids = [
-                item async for item in feedback_items
-            ]
+            feedback_logging_ids = [item async for item in feedback_items]
 
         count_query, count_parameters = await self.get_pto_logging_count(
             start_date=start_date,
@@ -522,15 +520,15 @@ class AzureCosmos(DatabaseQueryUtils):
         )
         return records
 
-    @handle_exceptions(re_raise=True, return_type=Tuple)
+    @handle_exceptions(re_raise=True, return_type=tuple)
     async def get_feedback_data(
         self,
         limit: int,
         offset: int,
-        filters: Optional[List[FiltersType]] = None,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
-    ) -> Tuple[List[AuditDataResponse], ModelsPagination]:
+        filters: list[FiltersType] | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> tuple[list[AuditDataResponse], ModelsPagination]:
         """Return paginated feedback records using the report filters."""
         await self.initialize()
         container = self.database_client.get_container_client(
@@ -597,13 +595,13 @@ class AzureCosmos(DatabaseQueryUtils):
         ]
         return records, pagination
 
-    @handle_exceptions(re_raise=True, return_type=List[AuditDataResponse])
+    @handle_exceptions(re_raise=True, return_type=list[AuditDataResponse])
     async def get_feedback_data_for_export(
         self,
-        filters: Optional[List[FiltersType]] = None,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
-    ) -> List[AuditDataResponse]:
+        filters: list[FiltersType] | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> list[AuditDataResponse]:
         """Return all feedback records matching the report filters."""
         records, _ = await self.get_feedback_data(
             limit=1_000_000,

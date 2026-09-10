@@ -1,4 +1,3 @@
-from typing import Dict, List
 
 
 class ChatHelpers:
@@ -6,7 +5,7 @@ class ChatHelpers:
 
     @staticmethod
     async def process_text_inputs(
-        text_inputs: List[Dict[str, str]],
+        text_inputs: list[dict[str, str]],
     ) -> str:
         """
         Convert the list of dictionaries (text_inputs) into a single context string.
