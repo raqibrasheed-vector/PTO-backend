@@ -110,6 +110,7 @@ celerybeat.pid
 
 # Environments
 .env
+pto_backend/saml/settings.json
 .venv
 env/
 venv/
@@ -140,3 +141,5 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+vectorstores/*
