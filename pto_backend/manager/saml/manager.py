@@ -116,7 +116,7 @@ class SAMLManager:
 
         email = attributes.get(EMAIL_CLAIM, "sabarishkumar@gmail.com")
         display_name = attributes.get(DISPLAY_NAME_CLAIM, "sabarish t")
-        group_name = attributes.get(GROUPS_CLAIM, "user")
+        group_name = attributes.get(GROUPS_CLAIM, "admin")
 
         access_token = await self.token_manager.generate_login_tokens(
             email=email, name=display_name, group=group_name, session_id=str(uuid4())
