@@ -9,7 +9,7 @@ on:
       - main
 
 env:
-  PYTHON_VERSION: '3.12'
+  PYTHON_VERSION: "3.12"
 
 jobs:
   build-test:
@@ -31,8 +31,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-            uv sync --locked --all-groups
-            uv pip install bandit pip-audit
+          uv sync --locked --all-groups
+          uv pip install bandit pip-audit
 
       - name: SAST scan (Bandit)
         continue-on-error: true
@@ -42,7 +42,7 @@ jobs:
       - name: Dependency security scan
         continue-on-error: true
         shell: bash
-        run: uv run pip-audit 
+        run: uv run pip-audit
 
       - name: Select artifact identity
         id: artifact-meta
@@ -69,8 +69,8 @@ jobs:
           uv export --locked --no-dev --format requirements-txt \
             --output-file deploy-package/requirements.txt
           echo "${GITHUB_SHA}" > deploy-package/artifact-sha.txt
-      
-      # Upload deploy-package artifact.   
+
+      # Upload deploy-package artifact.
       - name: Upload deploy-package artifact
         if: github.event_name == 'push'
         uses: actions/upload-artifact@v7
@@ -78,7 +78,6 @@ jobs:
           name: ${{ steps.artifact-meta.outputs.artifact_name }}
           retention-days: 21
           path: deploy-package/
-
 
   deploy-qa:
     if: github.event_name == 'push' && github.ref_name == 'main'
@@ -105,7 +104,6 @@ jobs:
             echo "Artifact SHA mismatch: expected ${GITHUB_SHA}, got $ACTUAL_SHA"
             exit 1
           fi
-
 
       - name: Deploy to QA
         uses: azure/webapps-deploy@v3
