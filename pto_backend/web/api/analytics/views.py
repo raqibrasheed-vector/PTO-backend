@@ -131,10 +131,10 @@ async def calculate_available_vacation(
 
     pto_calculation = await azure_openai_client.calculate_vacation(
         **employee_meta.model_dump(
-            exclude=(
+            exclude={
                 "pto_logging_id",
                 "client_name",
-            )
+            }
         )
     )
 

@@ -17,18 +17,18 @@ class UserLogging(AbstractTableData):
     __partition_key__ = "/user_name"
     __table_name__ = "pto_user_login_log"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "pto_user_login_log"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "pto_user_login_log"
 
 
 class PTOLogging(AbstractTableData):
     user_name: str
     employee_id: str
-    start_date: datetime
-    end_date: datetime
+    start_date: str
+    end_date: str
     employee_name: str
     client_name: str
     total_hours: float
@@ -43,10 +43,10 @@ class PTOLogging(AbstractTableData):
 
     CONTAINER_NAME: ClassVar[str] = "pto_logging"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "pto_logging"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "pto_logging"
 
 
@@ -72,10 +72,10 @@ class PTOFeedBackForm(AbstractTableData):
 
     CONTAINER_NAME: ClassVar[str] = "PTO_feedback"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "PTO_feedback"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "PTO_feedback"
 
 

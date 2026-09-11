@@ -59,9 +59,11 @@ def create_xlsx_response(
             if column in {"start_date", "end_date", "created_at"}:
                 value = format_export_date(value)
             if column == "feedback_type":
-                value = {"thumbs_up": "Positive", "thumbs_down": "Negative"}.get(
-                    value, value
-                )
+                if isinstance(value, str):
+                    value = {
+                        "thumbs_up": "Positive",
+                        "thumbs_down": "Negative",
+                    }.get(value, value)
             row.append(value)
         worksheet.append(row)
 

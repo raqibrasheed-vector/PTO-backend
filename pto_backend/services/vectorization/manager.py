@@ -119,7 +119,9 @@ class VectorizationManager:
         image = image.convert("L")
         image = image.filter(ImageFilter.MedianFilter())
         image = ImageEnhance.Contrast(image).enhance(2)
-        return image.resize((image.width * 2, image.height * 2), Image.LANCZOS)
+        return image.resize(
+            (image.width * 2, image.height * 2), Image.Resampling.LANCZOS
+        )
 
     def _extract_text_via_ocr(self, file_bytes: bytes) -> str:
         """OCR fallback for scanned/image-only PDFs with no text layer."""
@@ -197,7 +199,9 @@ class VectorizationManager:
             str(employee_dir), embeddings, allow_dangerous_deserialization=True
         )
 
-    @handle_exceptions(re_raise=True, return_type=schema.VectorSearchResult)
+    @handle_exceptions(  # type: ignore[arg-type]
+        re_raise=True, return_type=schema.VectorSearchResult
+    )
     async def query_saved_document(
         self, employee_id: str, query: str, top_k: int | None = None
     ) -> schema.VectorSearchResult | None:
@@ -227,7 +231,9 @@ class VectorizationManager:
             results=results,
         )
 
-    @handle_exceptions(re_raise=True, return_type=schema.VectorSearchResult)
+    @handle_exceptions(  # type: ignore[arg-type]
+        re_raise=True, return_type=schema.VectorSearchResult
+    )
     async def process_document(
         self,
         file_bytes: bytes,

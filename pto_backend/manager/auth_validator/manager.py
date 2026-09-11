@@ -20,10 +20,8 @@ class TokenExpiredException(Exception):
     """Custom exception for expired tokens."""
 
 
-
 class UnauthorizedException(Exception):
     """Custom exception for expired tokens."""
-
 
 
 class TokenGatewayManager:

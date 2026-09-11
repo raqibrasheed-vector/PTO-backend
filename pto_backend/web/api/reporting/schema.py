@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel, Field
 
 from pto_backend.services.azure.cosmosdb.schema import FiltersType

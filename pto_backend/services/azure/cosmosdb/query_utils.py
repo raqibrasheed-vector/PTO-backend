@@ -55,7 +55,7 @@ class DatabaseQueryUtils:
             FROM c
         """
 
-        parameters = []
+        parameters: list[dict[str, Any]] = []
         where_conditions = []
 
         # Date filters

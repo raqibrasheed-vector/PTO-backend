@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel
 
 from pto_backend.services.vectorization.schema import DocumentChunk

@@ -23,7 +23,7 @@ async def handle_callback_saml(
     background_tasks: BackgroundTasks,
     saml_manager: utils.SAMLManager = Depends(utils.saml_function_wrapper),
     cosmos_client: AzureCosmos = Depends(),
-) -> None:
+) -> RedirectResponse:
     """
     Get SAML response for the application.
     """
@@ -69,7 +69,7 @@ async def handle_user_logout() -> JSONResponse:
 @handle_exceptions(re_raise=False, return_type=schema.SignInResponse)
 async def create_login_request(
     saml_manager: utils.SAMLManager = Depends(utils.saml_function_wrapper),
-) -> RedirectResponse:
+) -> schema.SignInResponse:
 
     saml_login_url = await saml_manager.get_saml_login()
 

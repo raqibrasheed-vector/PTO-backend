@@ -2,10 +2,13 @@ import asyncio
 import datetime
 import logging
 from collections import defaultdict
+from collections.abc import AsyncIterator
+from typing import Any, cast
 
 import aiohttp
 from azure.core.pipeline.transport import AioHttpTransport
-from azure.cosmos.aio import CosmosClient
+from azure.cosmos import PartitionKey
+from azure.cosmos.aio import CosmosClient, DatabaseProxy
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
 from azure.identity.aio import DefaultAzureCredential
 from fastapi import HTTPException, status
@@ -65,9 +68,16 @@ class AzureCosmos(DatabaseQueryUtils):
         self.session: aiohttp.ClientSession | None = None
         self.transport: AioHttpTransport | None = None
         self.client: CosmosClient | None = None
-        self.database_client = None
+        self.database_client: DatabaseProxy | None = None
 
-    async def ensure_containers_initialization(self, database_client=None) -> None:
+    def _get_database_client(self) -> DatabaseProxy:
+        if self.database_client is None:
+            raise RuntimeError("Cosmos database client is not initialized")
+        return self.database_client
+
+    async def ensure_containers_initialization(
+        self, database_client: DatabaseProxy | None = None
+    ) -> None:
         database_client = database_client or self.database_client
         if database_client is None:
             raise RuntimeError("Cosmos database client is not initialized")
@@ -77,8 +87,8 @@ class AzureCosmos(DatabaseQueryUtils):
             print("Database exists")
 
             for table in tables.tables_list:
-                container_name = table.__table_name__
-                partition_key = table.__partition_key__
+                container_name = table.__table_name__  # type: ignore
+                partition_key = table.__partition_key__  # type: ignore
 
                 print("Container:", container_name)
                 print("Partition key:", partition_key)
@@ -94,7 +104,7 @@ class AzureCosmos(DatabaseQueryUtils):
 
                     await database_client.create_container(
                         id=container_name,
-                        partition_key={"paths": [partition_key], "kind": "Hash"},
+                        partition_key=PartitionKey(path=partition_key),
                     )
 
                     print("Container created:", container_name)
@@ -195,7 +205,7 @@ class AzureCosmos(DatabaseQueryUtils):
             self.session = None
             self.connector = None
             self.transport = None
-            self.credential = None
+            self.credential = None  # type: ignore
 
             if client is not None:
                 await client.close()
@@ -206,13 +216,13 @@ class AzureCosmos(DatabaseQueryUtils):
             if credential is not None:
                 await credential.close()
 
-    @handle_exceptions(re_raise=True, return_type=None)
+    @handle_exceptions(re_raise=True, return_type=type(None))
     async def write_user_logging(self, username: str) -> None:
         await self.initialize()
 
         user_data = tables.UserLogging(user_name=username)
 
-        container_client = self.database_client.get_container_client(
+        container_client = self._get_database_client().get_container_client(
             container=user_data.__str__()
         )
 
@@ -224,7 +234,7 @@ class AzureCosmos(DatabaseQueryUtils):
     async def write_pto_logging(self, pto_data: tables.PTOLogging) -> str:
         await self.initialize()
 
-        container_client = self.database_client.get_container_client(
+        container_client = self._get_database_client().get_container_client(
             container=pto_data.__str__()
         )
 
@@ -238,7 +248,7 @@ class AzureCosmos(DatabaseQueryUtils):
     async def write_pto_feedback(self, pto_data: tables.PTOFeedBackForm) -> str:
         await self.initialize()
 
-        container_client = self.database_client.get_container_client(
+        container_client = self._get_database_client().get_container_client(
             container=pto_data.__str__()
         )
         query = """
@@ -247,7 +257,7 @@ class AzureCosmos(DatabaseQueryUtils):
             WHERE c.pto_logging_id = @pto_logging_id
         """
 
-        parameters = [
+        parameters: list[dict[str, object]] = [
             {
                 "name": "@pto_logging_id",
                 "value": pto_data.pto_logging_id,
@@ -274,13 +284,13 @@ class AzureCosmos(DatabaseQueryUtils):
 
         return pto_item["id"]
 
-    @handle_exceptions(re_raise=True, return_type=None)
+    @handle_exceptions(re_raise=True, return_type=type(None))
     async def update_pto_logging(
         self,
         pto_logging_id: str,
         username: str,
         file_name: str | None = None,
-        leaves_available: int | None = None,
+        leaves_available: float | None = None,
         client_name: str | None = None,
     ) -> None:
         """Attach an uploaded file's name to an existing PTO logging entry.
@@ -298,7 +308,7 @@ class AzureCosmos(DatabaseQueryUtils):
         """
         await self.initialize()
 
-        additions = [
+        additions: list[dict[str, object]] = [
             {
                 "op": "set",
                 "path": "/last_modified",
@@ -319,7 +329,7 @@ class AzureCosmos(DatabaseQueryUtils):
                 {"op": "set", "path": "/client_name", "value": client_name}
             )
 
-        container_client = self.database_client.get_container_client(
+        container_client = self._get_database_client().get_container_client(
             container=tables.PTOLogging.CONTAINER_NAME
         )
 
@@ -328,15 +338,17 @@ class AzureCosmos(DatabaseQueryUtils):
         )
 
     @handle_exceptions(re_raise=True, return_type=defaultdict)
-    async def get_pto_logging_table_data_filters(self) -> defaultdict[list]:
+    async def get_pto_logging_table_data_filters(
+        self,
+    ) -> defaultdict[str, list[str]]:
         await self.initialize()
 
         filter_data = defaultdict(list)
 
-        container_client = self.database_client.get_container_client(
+        container_client = self._get_database_client().get_container_client(
             container=tables.PTOLogging.CONTAINER_NAME
         )
-        feedback_container_client = self.database_client.get_container_client(
+        feedback_container_client = self._get_database_client().get_container_client(
             container=tables.PTOFeedBackForm.CONTAINER_NAME
         )
 
@@ -387,7 +399,7 @@ class AzureCosmos(DatabaseQueryUtils):
             if filter_item.key == "feedback_type" and not filter_item.isSort
         ]
 
-        container_client_feedback = self.database_client.get_container_client(
+        container_client_feedback = self._get_database_client().get_container_client(
             container=tables.PTOFeedBackForm.CONTAINER_NAME
         )
         feedback_logging_ids: list[str] | None = None
@@ -405,7 +417,7 @@ class AzureCosmos(DatabaseQueryUtils):
                     }
                 ],
             )
-            feedback_logging_ids = [item async for item in feedback_items]
+            feedback_logging_ids = [str(item) async for item in feedback_items]
 
         count_query, count_parameters = await self.get_pto_logging_count(
             start_date=start_date,
@@ -414,7 +426,7 @@ class AzureCosmos(DatabaseQueryUtils):
             feedback_logging_ids=feedback_logging_ids,
         )
 
-        container_client_logging = self.database_client.get_container_client(
+        container_client_logging = self._get_database_client().get_container_client(
             container=tables.PTOLogging.CONTAINER_NAME
         )
 
@@ -422,7 +434,7 @@ class AzureCosmos(DatabaseQueryUtils):
             query=count_query,
             parameters=count_parameters,
         )
-        total_count = await anext(items.__aiter__(), 0)
+        total_count = int(await anext(cast(AsyncIterator[Any], items.__aiter__()), 0))
 
         pagination = await self.get_paginations(
             total_count=total_count,
@@ -500,14 +512,16 @@ class AzureCosmos(DatabaseQueryUtils):
             end_date=end_date,
             filters=filters or [],
         )
-        container_client = self.database_client.get_container_client(
+        container_client = self._get_database_client().get_container_client(
             container=tables.PTOLogging.CONTAINER_NAME
         )
         count_items = container_client.query_items(
             query=count_query,
             parameters=count_parameters,
         )
-        total_count = await anext(count_items.__aiter__(), 0)
+        total_count = int(
+            await anext(cast(AsyncIterator[Any], count_items.__aiter__()), 0)
+        )
         if not total_count:
             return []
 
@@ -531,14 +545,14 @@ class AzureCosmos(DatabaseQueryUtils):
     ) -> tuple[list[AuditDataResponse], ModelsPagination]:
         """Return paginated feedback records using the report filters."""
         await self.initialize()
-        container = self.database_client.get_container_client(
+        container = self._get_database_client().get_container_client(
             container=tables.PTOFeedBackForm.CONTAINER_NAME
         )
         normalized_filters = [
             FiltersType.model_validate(item) for item in (filters or [])
         ]
         conditions = []
-        parameters = []
+        parameters: list[dict[str, object]] = []
 
         if start_date and end_date:
             conditions.append(
@@ -563,7 +577,9 @@ class AzureCosmos(DatabaseQueryUtils):
             query=f"SELECT VALUE COUNT(1) FROM c{where_clause}",
             parameters=parameters,
         )
-        total_count = await anext(count_items.__aiter__(), 0)
+        total_count = int(
+            await anext(cast(AsyncIterator[Any], count_items.__aiter__()), 0)
+        )
         pagination = await self.get_paginations(
             total_count=total_count,
             page_size=limit,
@@ -579,12 +595,14 @@ class AzureCosmos(DatabaseQueryUtils):
             ORDER BY c.start_date DESC
             OFFSET @offset LIMIT @limit
         """
-        query_parameters = [
+        query_parameters: list[dict[str, object]] = [
             *parameters,
             {"name": "@offset", "value": pagination.start},
             {"name": "@limit", "value": limit},
         ]
-        items = container.query_items(query=query, parameters=query_parameters)
+        items = container.query_items(
+            query=query, parameters=cast(list[dict[str, Any]], query_parameters)
+        )
         records = [
             AuditDataResponse.model_validate(
                 {

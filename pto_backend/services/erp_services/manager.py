@@ -1,3 +1,4 @@
+from typing import Any
 
 from async_lru import alru_cache
 from fastapi import HTTPException
@@ -8,10 +9,36 @@ from pto_backend.services.erp_services import schema
 from pto_backend.settings import settings
 
 
+def _required_text(employee: dict[str, Any], field: str) -> str:
+    value = employee.get(field)
+    if not isinstance(value, str) or not value.strip():
+        raise HTTPException(
+            status_code=502,
+            detail=f"ERP response is missing a valid {field} value",
+        )
+    return value
+
+
+def _required_number(employee: dict[str, Any], field: str) -> float:
+    value = employee.get(field)
+    if not isinstance(value, (int, float, str)):
+        raise HTTPException(
+            status_code=502,
+            detail=f"ERP response is missing a valid {field} value",
+        )
+    try:
+        return float(value)
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"ERP response is missing a valid {field} value",
+        ) from exc
+
+
 class ErpServicesManager:
     """Class to handle all the ERP manager requests and data"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.requestSession = AsyncAPIClient(url=settings.erp_api_url)
 
     @alru_cache(ttl=1800)
@@ -35,10 +62,14 @@ class ErpServicesManager:
 
         try:
             token_data = await api_manager.post(endpoint="/oauth2/token", data=payload)
+
+            token = token_data.get("access_token")
+            if not isinstance(token, str) or not token:
+                raise HTTPException(status_code=400, detail="Token response is invalid")
         finally:
             await api_manager.close()
 
-        return token_data.get("access_token")
+        return token
 
     @handle_exceptions(re_raise=True, return_type=list[schema.EmployeeResponse])
     async def fetch_employee_details(
@@ -57,32 +88,40 @@ class ErpServicesManager:
         }
 
         try:
-            employee_Data: list[dict[str, str]] = await self.requestSession.get(
+            employee_data = await self.requestSession.get(
                 endpoint="/allegis-prod-psemployeetimedataapi/v1/timecode/summary",
                 params=params,
                 headers=headers,
             )
 
-            if not employee_Data:
+            if not isinstance(employee_data, list) or not employee_data:
                 raise HTTPException(
                     status_code=404,
-                    detail="Employee details not found. Please verify the Employee ID and try again.",
+                    detail=(
+                        "Employee details not found. Please verify the Employee ID "
+                        "and try again."
+                    ),
                 )
 
             employee_list: list[schema.EmployeeResponse] = [
                 schema.EmployeeResponse(
-                    employee_id=selected_employee.get("EmployeeId"),
-                    employee_name=selected_employee.get("EmployeeName"),
-                    used_vacations=selected_employee.get("TotalHrsVacUsed"),
-                    regular_hours_worked=selected_employee.get("TotalHrsWorked"),
-                    state=selected_employee.get("State"),
-                    customer_name=selected_employee.get("CustomerName"),
-                    customer_id=selected_employee.get("CustomerId"),
-                    remote_worker=selected_employee.get("RemoteWorker"),
-                    home_state=selected_employee.get("HomeState"),
-                    job_req_status=selected_employee.get("JobReqStatus"),
+                    employee_id=_required_text(selected_employee, "EmployeeId"),
+                    employee_name=_required_text(selected_employee, "EmployeeName"),
+                    used_vacations=_required_number(
+                        selected_employee, "TotalHrsVacUsed"
+                    ),
+                    regular_hours_worked=_required_number(
+                        selected_employee, "TotalHrsWorked"
+                    ),
+                    state=_required_text(selected_employee, "State"),
+                    customer_name=_required_text(selected_employee, "CustomerName"),
+                    customer_id=_required_text(selected_employee, "CustomerId"),
+                    remote_worker=_required_text(selected_employee, "RemoteWorker"),
+                    home_state=_required_text(selected_employee, "HomeState"),
+                    job_req_status=_required_text(selected_employee, "JobReqStatus"),
                 )
-                for selected_employee in employee_Data
+                for selected_employee in employee_data
+                if isinstance(selected_employee, dict)
             ]
 
             employee_list = sorted(employee_list, key=lambda x: x.job_req_status)

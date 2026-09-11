@@ -1,4 +1,3 @@
-
 from agent_framework.openai import OpenAIChatClient, OpenAIChatOptions
 from agent_framework.orchestrations import SequentialBuilder
 from azure.identity.aio import DefaultAzureCredential
@@ -67,7 +66,7 @@ class AzureVacationChatClient(ChatHelpers):
 
         pto_extractor_openai_options: OpenAIChatOptions = {
             "temperature": 0,
-            "response_format": PTOEligibilityExtractor,
+            "response_format": PTOEligibilityExtractor,  # type: ignore
             "max_tokens": 1000,
         }
 
@@ -81,7 +80,7 @@ class AzureVacationChatClient(ChatHelpers):
 
         pto_calculator_openai_options: OpenAIChatOptions = {
             "temperature": 0,
-            "response_format": PTOHoursResponder,
+            "response_format": PTOHoursResponder,  # type: ignore
             "max_tokens": 1000,
         }
 
@@ -105,7 +104,7 @@ class AzureVacationChatClient(ChatHelpers):
 
         pto_summarizer_openai_options: OpenAIChatOptions = {
             "temperature": 0,
-            "response_format": PTOSummariser,
+            "response_format": PTOSummariser,  # type: ignore
             "max_tokens": 1000,
         }
 

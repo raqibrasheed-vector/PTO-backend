@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -68,7 +69,7 @@ def get_app() -> FastAPI:
         name="static",
     )
 
-    def custom_openapi():
+    def custom_openapi() -> dict[str, Any]:
         if app.openapi_schema:
             return app.openapi_schema
 
@@ -90,6 +91,6 @@ def get_app() -> FastAPI:
 
         return schema
 
-    app.openapi = custom_openapi
+    app.openapi = custom_openapi  # type: ignore
 
     return app

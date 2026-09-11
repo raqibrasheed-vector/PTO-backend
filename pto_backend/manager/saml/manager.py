@@ -67,7 +67,7 @@ class SAMLManager:
 
     async def flattern_arrtibutes(self, saml_data: dict[str, Any]) -> dict[str, str]:
         flat_attributes = {
-            key: values[0] if values else None for key, values in saml_data.items()
+            key: str(values[0]) if values else "" for key, values in saml_data.items()
         }
         return flat_attributes
 
@@ -77,21 +77,23 @@ class SAMLManager:
 
         saml_response = form.get("SAMLResponse")
 
-        if not saml_response:
+        if not isinstance(saml_response, str) or not saml_response:
             raise HTTPException(status_code=400, detail="Missing SAMLResponse")
 
         saml_request = await self.prepare_saml_request()
 
-        saml_request = saml_request.model_dump()
+        saml_request_data = saml_request.model_dump()
 
-        saml_request["post_data"] = {"SAMLResponse": saml_response}
+        saml_request_data["post_data"] = {"SAMLResponse": saml_response}
 
         relay_state = form.get("RelayState")
 
         if relay_state:
-            saml_request["post_data"]["RelayState"] = relay_state
+            saml_request_data["post_data"]["RelayState"] = str(relay_state)
 
-        auth = OneLogin_Saml2_Auth(saml_request, custom_base_path=str(self.saml_path))
+        auth = OneLogin_Saml2_Auth(
+            saml_request_data, custom_base_path=str(self.saml_path)
+        )
 
         try:
             auth.process_response()
@@ -119,7 +121,7 @@ class SAMLManager:
         group_name = attributes.get(GROUPS_CLAIM, "admin")
 
         access_token = await self.token_manager.generate_login_tokens(
-            email=email, name=display_name, group=group_name, session_id=str(uuid4())
+            email=email, name=display_name, group=group_name, session_id=uuid4()
         )
 
         return access_token, display_name

@@ -1,5 +1,3 @@
-
-
 class ChatHelpers:
     """Helper class for all the Azure chat clients."""
 
