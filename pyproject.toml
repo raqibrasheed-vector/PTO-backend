@@ -8,6 +8,7 @@ maintainers = []
 readme = "README.md"
 dependencies = [
   "fastapi >=0.122.0,<1",
+  "anyio >=4.11.0,<4.15",
   "uvicorn[standard] >=0.38.0,<1",
   "gunicorn >=23.0.0,<24",
   "pydantic >=2.12.5,<3",
@@ -48,7 +49,7 @@ dev = [
   "mypy >=1.19.0,<2",
   "pre-commit >=4.5.0,<5",
   "pytest-cov >=7.0.0,<8",
-  "anyio >=4.11.0,<5",
+  "anyio >=4.11.0,<4.15",
   "pytest-env >=1.2.0,<2",
   "httpx >=0.28.1,<1",
 ]
