@@ -66,6 +66,8 @@ jobs:
             --exclude '.dockerignore' \
             --exclude 'Dockerfile' \
             --exclude 'docker-compose.yml'
+          uv export --locked --no-dev --format requirements-txt \
+            --output-file deploy-package/requirements.txt
           echo "${GITHUB_SHA}" > deploy-package/artifact-sha.txt
       
       # Upload deploy-package artifact.   
