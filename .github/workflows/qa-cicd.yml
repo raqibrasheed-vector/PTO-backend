@@ -71,7 +71,7 @@ jobs:
             --output-file deploy-package/requirements.txt
           echo "${GITHUB_SHA}" > deploy-package/artifact-sha.txt
 
-      # Upload deploy-package artifact.
+      # Upload deploy-package artifact
       - name: Upload deploy-package artifact
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v7
