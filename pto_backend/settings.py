@@ -56,6 +56,12 @@ class Settings(BaseSettings):
     access_secret: str = os.getenv("TOKEN_SECRET", "")
     token_audience: str = os.getenv("TOKEN_AUDIENCE", "actalent")
     cookie_domain: str = os.getenv("COOKIE_DOMAIN", "")
+    access_token_cookie_name: str = os.getenv(
+        "ACCESS_TOKEN_COOKIE_NAME", "actalent_Token"
+    )
+    session_token_cookie_name: str = os.getenv(
+        "SESSION_TOKEN_COOKIE_NAME", "actalent_session"
+    )
 
     cosmos_db_url: str = os.getenv("COSMOS_DB_URL", "")
     cosmos_db_name: str = os.getenv("COSMOS_DB_NAME", "")
