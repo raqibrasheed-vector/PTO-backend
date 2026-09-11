@@ -114,7 +114,7 @@ class SAMLManager:
 
         attributes = await self.flattern_arrtibutes(auth.get_attributes())
 
-        email = attributes.get(EMAIL_CLAIM, "sabarishkumar@gmail.com")
+        email = attributes.get(EMAIL_CLAIM, "sthirukumar@vectoriq.ai")
         display_name = attributes.get(DISPLAY_NAME_CLAIM, "sabarish t")
         group_name = attributes.get(GROUPS_CLAIM, "admin")
 
