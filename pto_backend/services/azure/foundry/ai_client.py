@@ -36,14 +36,14 @@ class AzureVacationChatClient(ChatHelpers):
 
         if settings.environment == "dev":
             self.chat_client = OpenAIChatClient(
-                model=settings.open_ai_model,
-                azure_endpoint=settings.azure_endpoint,
+                model=settings.open_ai_model_deployment,
+                azure_endpoint=settings.open_ai_endpoint,
                 api_key=settings.open_ai_key,
             )
         else:
             self.chat_client = OpenAIChatClient(
-                model=settings.open_ai_model,
-                azure_endpoint=settings.azure_endpoint,
+                model=settings.open_ai_model_deployment,
+                azure_endpoint=settings.open_ai_endpoint,
                 credential=self.credential,
             )
 
@@ -123,8 +123,6 @@ class AzureVacationChatClient(ChatHelpers):
         events = await workflow.run(
             message="",
         )
-
-        print(">>>>", events.get_outputs()[0].__dict__)
 
         result = events.get_outputs()[0]
 

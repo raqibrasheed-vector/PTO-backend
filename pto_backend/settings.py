@@ -82,8 +82,8 @@ class Settings(BaseSettings):
     vectorstore_default_top_k: int = int(os.getenv("VECTORSTORE_DEFAULT_TOP_K", "4"))
 
     # openAI configs
-    azure_endpoint: str = os.getenv("AZURE_ENDPOINT", "")
-    open_ai_model: str = os.getenv("AZURE_MODEL", "")
+    open_ai_endpoint: str = os.getenv("OPENAI_ENDPOINT", "")
+    open_ai_model_deployment: str = os.getenv("OPENAI_MODEL_DEPLOYMENT", "")
     open_ai_version: str = os.getenv("OPENAI_API_VERSION", "")
     open_ai_key: str = os.getenv("OPENAI_API_KEY", "")
 
