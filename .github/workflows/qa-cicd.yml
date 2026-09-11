@@ -1,0 +1,112 @@
+name: CI/CD -  Dev/QA
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+env:
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact_name: ${{ steps.artifact-meta.outputs.artifact_name }}
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: |
+            uv sync --locked --all-groups
+            uv pip install --system bandit pip-audit
+
+      - name: SAST scan (Bandit)
+        continue-on-error: true
+        shell: bash
+        run: uv run bandit -r . --exclude ./.venv,./tests -ll
+
+      - name: Dependency security scan
+        continue-on-error: true
+        shell: bash
+        run: uv run pip-audit 
+
+      - name: Select artifact identity
+        id: artifact-meta
+        shell: bash
+        run: |
+          echo "artifact_name=python-app-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare deploy package
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          mkdir -p deploy-package
+          rsync -a ./ deploy-package/ \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude '.venv/' \
+            --exclude 'tests/' \
+            --exclude '.pytest_cache/' \
+            --exclude '__pycache__/' \
+            --exclude '*.pyc' \
+            --exclude '.dockerignore' \
+            --exclude 'Dockerfile' \
+            --exclude 'docker-compose.yml'
+          echo "${GITHUB_SHA}" > deploy-package/artifact-sha.txt
+      
+      # Upload deploy-package artifact.   
+      - name: Upload deploy-package artifact
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.artifact-meta.outputs.artifact_name }}
+          retention-days: 21
+          path: deploy-package/
+
+
+  deploy-qa:
+    if: github.event_name == 'push' && github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    needs: build-test
+    concurrency:
+      group: ${{ github.repository }}-qa-deploy
+      cancel-in-progress: true
+    environment:
+      name: QA
+      url: https://${{ vars.AZURE_WEBAPP }}.azurewebsites.net
+
+    steps:
+      - name: Download deploy package artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ needs.build-test.outputs.artifact_name }}
+
+      - name: Verify artifact identity
+        shell: bash
+        run: |
+          ACTUAL_SHA="$(cat artifact-sha.txt)"
+          if [ "$ACTUAL_SHA" != "${GITHUB_SHA}" ]; then
+            echo "Artifact SHA mismatch: expected ${GITHUB_SHA}, got $ACTUAL_SHA"
+            exit 1
+          fi
+
+
+      - name: Deploy to QA
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_WEBAPP }}
+          publish-profile: ${{ secrets.APP_SERVICE_PUBLISH_PROFILE }}
