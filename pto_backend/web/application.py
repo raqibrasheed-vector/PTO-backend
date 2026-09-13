@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from pto_backend.log import configure_logging
+from pto_backend.settings import settings
 from pto_backend.web.api.router import api_router
 from pto_backend.web.lifespan import lifespan_setup
 
@@ -52,7 +53,7 @@ def get_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=[settings.frontend_url] if settings.frontend_url else [],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
