@@ -53,6 +53,8 @@ class Settings(BaseSettings):
     frontend_url: str = os.getenv("FRONTEND_URL", "")
     saml_settings_base64: str = os.getenv("SAML_SETTINGS_BASE64", "")
 
+    admin_group_id: str = os.getenv("ADMIN_GROUP_ID", "")
+
     access_secret: str = os.getenv("TOKEN_SECRET", "")
     token_audience: str = os.getenv("TOKEN_AUDIENCE", "actalent")
     cookie_domain: str = os.getenv("COOKIE_DOMAIN", "")

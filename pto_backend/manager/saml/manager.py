@@ -119,7 +119,7 @@ class SAMLManager:
         required_attributes = {
             "email": attributes.get(EMAIL_CLAIM, ""),
             "display name": attributes.get(DISPLAY_NAME_CLAIM, ""),
-            "group": attributes.get(GROUPS_CLAIM, ""),
+            "group": attributes.get(GROUPS_CLAIM, "user"),
         }
         missing_attributes = [
             name for name, value in required_attributes.items() if not value.strip()
@@ -137,6 +137,11 @@ class SAMLManager:
         email = required_attributes["email"]
         display_name = required_attributes["display name"]
         group_name = required_attributes["group"]
+
+        if  settings.admin_group_id and group_name == settings.admin_group_id:
+            group_name = "admin"
+        else:
+            group_name = "user"
 
         access_token = await self.token_manager.generate_login_tokens(
             email=email, name=display_name, group=group_name, session_id=uuid4()
