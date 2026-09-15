@@ -61,6 +61,9 @@ async def handle_user_logout() -> JSONResponse:
     response.delete_cookie(
         key=AppCookieEnums.AccessToken.value,
         path="/",
+        httponly=True,
+        secure=True,
+        samesite="none",
     )
 
     return response
