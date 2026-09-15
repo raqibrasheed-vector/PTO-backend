@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import json
+import asyncio
 from collections.abc import Awaitable, Callable
 from functools import wraps
-from typing import Any, ParamSpec, TypeVar
+from typing import ParamSpec, TypeVar
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
@@ -17,11 +17,24 @@ T = TypeVar("T")
 P = ParamSpec("P")
 
 
-def safe_json_dumps(obj: Any) -> str | None:
-    try:
-        return json.dumps(obj)
-    except TypeError:
-        return None  # fallback value
+def _get_error_response(
+    error: Exception,
+    exception_map: dict[type[Exception], tuple[int, str]] | None,
+    default_status_code: int,
+    default_message: str,
+) -> tuple[int, str]:
+    if not exception_map:
+        return default_status_code, default_message
+
+    mapped_response = exception_map.get(type(error))
+    if mapped_response:
+        return mapped_response
+
+    for exception_type, response in exception_map.items():
+        if isinstance(error, exception_type):
+            return response
+
+    return default_status_code, default_message
 
 
 def handle_exceptions(
@@ -55,23 +68,17 @@ def handle_exceptions(
                 result = func(*args, **kwargs)
                 return await result if isinstance(result, Awaitable) else result
             except Exception as e:
-                logger.critical(f">>>>>errir {e}")
+                logger.critical(f"HTTP exception: {e,type(e)}")
                 if re_raise:
                     raise
-                status_code = default_status_code
-                if exception_map:
-                    status_code, message = exception_map.get(
-                        type(e),
-                        (
-                            default_status_code,
-                            default_message,
-                        ),
-                    )
+                status_code, message = _get_error_response(
+                    e,
+                    exception_map,
+                    default_status_code,
+                    default_message,
+                )
                 if type(e) is HTTPException:
                     raise HTTPException(status_code=e.status_code, detail=e.detail)
-                if custom_message := next(iter(list(e.args)), None):
-                    if safe_json_dumps(custom_message):
-                        message = custom_message
 
                 if log_func:
                     log_func(message)

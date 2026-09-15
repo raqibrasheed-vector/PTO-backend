@@ -40,8 +40,10 @@ async def handle_callback_saml(
         httponly=True,
         secure=True,
         samesite="none",
-        expires=datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=500),
-        path="/"
+        expires=datetime.datetime.now(datetime.UTC)
+        + datetime.timedelta(minutes=settings.access_token_expire_minutes),
+        max_age=settings.access_token_expire_minutes * 60,
+        path="/",
     )
 
     return response

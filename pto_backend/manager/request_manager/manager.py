@@ -86,10 +86,21 @@ class AsyncAPIClient:
             )
             response.raise_for_status()
             return response.json()
-        except httpx.RequestError as e:
-            raise HTTPException(status_code=400, detail=str(e.args))
-        except httpx.HTTPStatusError as e:
-            raise HTTPException(status_code=400, detail=str(e.args))
+        except httpx.TimeoutException as exc:
+            raise HTTPException(
+                status_code=504,
+                detail="The external service timed out. Please try again later.",
+            ) from exc
+        except httpx.RequestError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail="The external service is unavailable. Please try again later.",
+            ) from exc
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail="The external service returned an unexpected response.",
+            ) from exc
 
     async def close(self) -> None:
         await self.client.aclose()

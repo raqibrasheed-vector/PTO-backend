@@ -44,7 +44,8 @@ class TokenGatewayManager:
         access_payload = TokenSchema(
             email=email,
             iat=now,
-            exp=now + datetime.timedelta(minutes=500),
+            exp=now
+            + datetime.timedelta(minutes=settings.access_token_expire_minutes),
             name=name,
             aud=self.token_audience,
             session_id=str(session_id),
