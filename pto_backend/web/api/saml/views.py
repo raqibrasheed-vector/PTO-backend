@@ -41,7 +41,7 @@ async def handle_callback_saml(
         secure=True,
         samesite="none",
         expires=datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=500),
-        domain=settings.cookie_domain,
+        path="/"
     )
 
     return response
