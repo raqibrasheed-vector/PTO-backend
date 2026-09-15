@@ -17,7 +17,7 @@ from pto_backend.web.types import common_types
 router = APIRouter()
 
 
-@router.post("/acs", tags=["SAML"])
+@router.post("/callback")
 @handle_exceptions(re_raise=False, return_type=RedirectResponse)
 async def handle_callback_saml(
     background_tasks: BackgroundTasks,

@@ -11,6 +11,7 @@ from pto_backend.log import configure_logging
 from pto_backend.settings import settings
 from pto_backend.web.api.router import api_router
 from pto_backend.web.lifespan import lifespan_setup
+from pto_backend.web.api.saml import router
 
 APP_ROOT = Path(__file__).parent.parent
 
@@ -58,6 +59,8 @@ def get_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    app.include_router(router=router, prefix="/saml", tags=["SAML Authentications"])
 
     app.include_router(
         router=api_router,

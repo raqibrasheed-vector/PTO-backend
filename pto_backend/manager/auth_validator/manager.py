@@ -11,7 +11,7 @@ from pto_backend.manager.auth_validator.schema import TokenSchema
 from pto_backend.settings import settings
 from pto_backend.web.enums.app_enums import AppCookieEnums
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/saml/token", auto_error=False)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/saml/token", auto_error=False)
 
 T = TypeVar("T")
 
