@@ -343,7 +343,7 @@ class AzureCosmos(DatabaseQueryUtils):
     ) -> defaultdict[str, list[str]]:
         await self.initialize()
 
-        filter_data = defaultdict(list)
+        filter_data = defaultdict(set)
 
         container_client = self._get_database_client().get_container_client(
             container=tables.PTOLogging.CONTAINER_NAME
@@ -352,6 +352,13 @@ class AzureCosmos(DatabaseQueryUtils):
             container=tables.PTOFeedBackForm.CONTAINER_NAME
         )
 
+        def add_filter_values(key: str, value: object) -> None:
+            if isinstance(value, (list, tuple, set)):
+                for nested_value in value:
+                    add_filter_values(key, nested_value)
+            elif value is not None:
+                filter_data[key].add(str(value))
+
         query = await self.generate_distinct_query(
             fields=["user_name", "state", "employee_id"]
         )
@@ -359,21 +366,21 @@ class AzureCosmos(DatabaseQueryUtils):
         items = container_client.query_items(
             query=query,
         )
-
         async for item in items:
-            filter_data["user_name"].append(item["user_name"])
-            filter_data["state"].append(item["state"])
-            filter_data["employee_id"].append(item["employee_id"])
-
+            add_filter_values("user_name", item.get("user_name"))
+            add_filter_values("state", item.get("state"))
+            add_filter_values("employee_id", item.get("employee_id"))
         feedback_items = feedback_container_client.query_items(
             query="SELECT DISTINCT VALUE c.feedback_type FROM c"
         )
-        feedback_types = {item async for item in feedback_items}
-        filter_data["feedback_type"].extend(
-            sorted(feedback_types | {"thumbs_up", "thumbs_down"})
-        )
+        async for item in feedback_items:
+            add_filter_values("feedback_type", item)
 
-        return filter_data
+        filter_data["feedback_type"].update({"thumbs_up", "thumbs_down"})
+        return defaultdict(
+            list,
+            {key: sorted(values) for key, values in filter_data.items()},
+        )
 
     @handle_exceptions(re_raise=True, return_type=tuple)
     async def get_audit_data(
