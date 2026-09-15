@@ -116,9 +116,27 @@ class SAMLManager:
 
         attributes = await self.flattern_arrtibutes(auth.get_attributes())
 
-        email = attributes.get(EMAIL_CLAIM, "sthirukumar@vectoriq.ai")
-        display_name = attributes.get(DISPLAY_NAME_CLAIM, "sabarish t")
-        group_name = attributes.get(GROUPS_CLAIM, "admin")
+        required_attributes = {
+            "email": attributes.get(EMAIL_CLAIM, ""),
+            "display name": attributes.get(DISPLAY_NAME_CLAIM, ""),
+            "group": attributes.get(GROUPS_CLAIM, ""),
+        }
+        missing_attributes = [
+            name for name, value in required_attributes.items() if not value.strip()
+        ]
+
+        if missing_attributes:
+            raise HTTPException(
+                status_code=401,
+                detail={
+                    "message": "Required SAML attributes are missing",
+                    "attributes": missing_attributes,
+                },
+            )
+
+        email = required_attributes["email"]
+        display_name = required_attributes["display name"]
+        group_name = required_attributes["group"]
 
         access_token = await self.token_manager.generate_login_tokens(
             email=email, name=display_name, group=group_name, session_id=uuid4()
