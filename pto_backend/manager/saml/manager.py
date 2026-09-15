@@ -63,7 +63,7 @@ class SAMLManager:
             saml_response, custom_base_path=str(self.saml_path)
         )
 
-        return auth_login.login(return_to=settings.frontend_url)
+        return auth_login.login(return_to=settings.frontend_url, force_authn=True)
 
     async def flattern_arrtibutes(self, saml_data: dict[str, Any]) -> dict[str, str]:
         flat_attributes = {
